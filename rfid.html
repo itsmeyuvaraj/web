@@ -1,0 +1,116 @@
+<html>
+<head>
+<style>
+        table {
+            margin: 0 auto;
+            font-size: large;
+            border: 1px solid black;
+        }
+  
+        h1 {
+            text-align: center;
+            color: #006600;
+            font-size: xx-large;
+            font-family: 'Gill Sans', 
+                'Gill Sans MT', ' Calibri', 
+                'Trebuchet MS', 'sans-serif';
+        }
+  
+        td {
+            background-color: #E4F5D4;
+            border: 1px solid black;
+        }
+  
+        th,
+        td {
+            font-weight: bold;
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+  
+        td {
+            font-weight: lighter;
+        }
+    </style>
+</head>
+
+<body onload="tableFromJson()">
+    <p id="showData"></p>
+</body>
+
+<script type="text/javascript">
+
+let tableFromJson = () => {
+var getJSON = function(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        callback(null, xhr.response);
+      } else {
+        callback(status, xhr.response);
+      }
+    };
+    xhr.send();
+};
+getJSON('https://api.thingspeak.com/channels/1864041/feeds.json',
+function(err, data) {
+  if (err !== null) {
+    alert('Something went wrong: ' + err);
+  } else {
+  
+	const myBooks = data.feeds;
+
+	let col = [];
+    for (let i = 0; i < myBooks.length; i++) {
+      for (let key in myBooks[i]) {
+        if (col.indexOf(key) === -1) {
+          col.push(key);
+        }
+      }
+    } 
+	// Create table.
+	const table = document.createElement("table");
+	// Create table header row using the extracted headers above.
+    let tr = table.insertRow(-1);                   // table row.
+
+	const channel = data.channel;
+	var keynames = Object.entries(channel);
+
+	for (let i = 0; i < keynames.length; i++)
+	{
+		var keyname = keynames[i][0];
+		var value = keynames[i][1];
+		if (keyname.startsWith('field'))
+		{
+			let th = document.createElement("th");      // table header.
+			th.innerHTML = value;
+			console.log(value);
+			tr.appendChild(th);
+		}
+	}
+
+	
+    // add json data to the table as rows.
+    for (let i = 0; i < myBooks.length; i++) {
+
+      tr = table.insertRow(-1);
+
+      for (let j = 2; j < col.length; j++) {
+        let tabCell = tr.insertCell(-1);
+        tabCell.innerHTML = myBooks[i][col[j]];
+      }
+    }
+
+    // Now, add the newly created table with json data, to a container.
+    const divShowData = document.getElementById('showData');
+    divShowData.innerHTML = "";
+    divShowData.appendChild(table);
+  }
+});
+}
+</script>
+</head></html>
